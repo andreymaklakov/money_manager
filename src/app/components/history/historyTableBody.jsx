@@ -25,7 +25,7 @@ const HistoryTableBody = ({ sortedHistory, handleModalOpen }) => {
               title={item.amount + item.currency}
               className="md:text-base text-sm pb-2 md:max-w-[70px] max-w-[50px] overflow-hidden whitespace-nowrap overflow-ellipsis"
             >
-              {item.amount}
+              {item.amount.toFixed(2)}
               {item.currency}
             </td>
             <td className="md:text-base text-sm pb-2">

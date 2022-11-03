@@ -1,9 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useProviderContext } from "../context";
 import api from "../../api";
-import { dateFromToFilter, totalCalc } from "../../utils";
+import {
+  allUsersMoneyIfAccountsAreDeleted,
+  dateFromToFilter,
+  totalCalc,
+  allUsersExpensesIfExpensesAreDeleted,
+  filteredPerAccountUserExpenses,
+  zeroExpense
+} from "../../utils";
 import FiltrationBar from "../filtrationBar";
 import Loader from "../loader";
+
+import "@progress/kendo-theme-material/dist/all.css";
+import "hammerjs";
+import ChartsRender from "./chartsRender";
 
 const StatsPage = () => {
   const [period, setPeriod] = useState("This Month");
@@ -24,11 +35,17 @@ const StatsPage = () => {
 
   const [accounts] = useState([
     noFilter,
-    ...userMoney.map((account) => ({ name: account.name, id: account.id }))
+    ...allUsersMoneyIfAccountsAreDeleted(
+      allUsersHistory[signedUser.id],
+      userMoney
+    )
   ]);
   const [items] = useState([
     noFilter,
-    ...userExpenses.map((expense) => ({ name: expense.name, id: expense.id }))
+    ...allUsersExpensesIfExpensesAreDeleted(
+      allUsersHistory[signedUser.id],
+      userExpenses
+    )
   ]);
 
   useEffect(() => {
@@ -68,21 +85,23 @@ const StatsPage = () => {
     return (
       (filterData.accounts &&
         filterData.items &&
-        userMoney.filter((acc) => acc.id === Number(filterData.accounts))[0]
+        accounts.filter((acc) => acc.id === Number(filterData.accounts))[0]
           ?.name +
           " to " +
-          userExpenses.filter((exp) => exp.id === Number(filterData.items))[0]
+          items.filter((exp) => exp.id === Number(filterData.items))[0]
             ?.name) ||
-      userMoney.filter((acc) => acc.id === Number(filterData.accounts))[0]
+      accounts.filter((acc) => acc.id === Number(filterData.accounts))[0]
         ?.name ||
-      userExpenses.filter((exp) => exp.id === Number(filterData.items))[0]
-        ?.name ||
+      items.filter((exp) => exp.id === Number(filterData.items))[0]?.name ||
       ""
     );
   };
 
   const renderIncomes = () => {
-    const userIncomes = allUsersMoney[signedUser.id].map((prevState) => ({
+    const userIncomes = allUsersMoneyIfAccountsAreDeleted(
+      allUsersHistory[signedUser.id],
+      allUsersMoney[signedUser.id]
+    ).map((prevState) => ({
       ...prevState,
       amount: allUsersHistory[signedUser.id].incomes
         .filter((data) => data.account === prevState.id)
@@ -100,53 +119,59 @@ const StatsPage = () => {
       filteredUserMoney.length ? filteredUserMoney : userIncomes
     ).map((acc) => acc.join("") + " ");
 
-    return incomes;
+    return incomes.length ? incomes : [`0.00${signedUser.currency}`];
   };
 
   const renderExpenses = () => {
-    const zeroExpense = [
-      {
-        amount: 0,
-        currency: filterData.accounts
-          ? userMoney.filter((acc) => acc.id === Number(filterData.accounts))[0]
-              ?.currency
-          : userExpenses.filter((exp) => exp.id === Number(filterData.items))[0]
-              ?.currency
-      }
-    ];
+    let filteredPerAccUserExp = filteredPerAccountUserExpenses(
+      allUsersHistory[signedUser.id].expenses,
+      filterData,
+      period
+    );
 
-    let filteredPerAccountUserExpenses = allUsersHistory[signedUser.id].expenses
-      .filter((data) => dateFromToFilter(filterData, data, period))
-      .map((exp) => ({
-        ...exp
-      }))
-      .filter((data) =>
-        filterData.accounts
-          ? data.account === Number(filterData.accounts)
-          : true
-      );
-
-    filteredPerAccountUserExpenses.length
+    filteredPerAccUserExp.length
       ? true
-      : (filteredPerAccountUserExpenses = zeroExpense);
+      : (filteredPerAccUserExp = zeroExpense(filterData, accounts, items));
 
-    const filteredPerExpenseUserExpenses =
-      filteredPerAccountUserExpenses.filter(
-        (exp) => exp.item === Number(filterData.items)
-      );
+    const filteredPerExpenseUserExpenses = filteredPerAccUserExp.filter(
+      (exp) => exp.item === Number(filterData.items)
+    );
 
     const expenses = totalCalc(
       filterData.items
         ? filteredPerExpenseUserExpenses.length
           ? filteredPerExpenseUserExpenses
-          : zeroExpense
-        : filteredPerAccountUserExpenses
+          : zeroExpense(filterData, accounts, items)
+        : filteredPerAccUserExp
     ).map((arr) => arr.join("") + " ");
 
     return expenses;
   };
 
   if (incomesExpenses) {
+    const showIncomes = () => {
+      if (
+        !filterData.items &&
+        (filterData.incomesExpenses === String(incomesExpenses[1].id) ||
+          filterData.incomesExpenses === "")
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    const showExpenses = () => {
+      if (
+        filterData.incomesExpenses === String(incomesExpenses[2].id) ||
+        filterData.incomesExpenses === ""
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+
     return (
       <div className="flex justify-center relative">
         <div className="bg-white md:min-w-[750px] w-[430px] mt-[60px] rounded-2xl shadow-xl">
@@ -171,30 +196,26 @@ const StatsPage = () => {
             <div className="text-left ml-5  mb-5">
               <h1 className="text-lg font-medium">{renderHeader()}</h1>
 
-              <h1
-                className={
-                  !filterData.items &&
-                  (filterData.incomesExpenses ===
-                    String(incomesExpenses[1].id) ||
-                    filterData.incomesExpenses === "")
-                    ? ""
-                    : "hidden"
-                }
-              >
+              <h1 className={showIncomes() ? "" : "hidden"}>
                 Incomes: {renderIncomes()}
               </h1>
 
-              <h1
-                className={
-                  filterData.incomesExpenses ===
-                    String(incomesExpenses[2].id) ||
-                  filterData.incomesExpenses === ""
-                    ? ""
-                    : "hidden"
-                }
-              >
+              <h1 className={showExpenses() ? "" : "hidden"}>
                 Expenses: {renderExpenses()}
               </h1>
+            </div>
+
+            <div className="w-[600px] m-auto mb-9">
+              <ChartsRender
+                expensesData={renderExpenses()}
+                incomesData={renderIncomes()}
+                filterData={filterData}
+                showIncomes={showIncomes()}
+                showExpenses={showExpenses()}
+                period={period}
+                accounts={accounts.filter((item) => item.currency)}
+                items={items.filter((item) => item.currency)}
+              />
             </div>
           </div>
         </div>

@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { historyFiltration, todayDate, toInputFormat } from "../../utils";
+import {
+  allUsersExpensesIfExpensesAreDeleted,
+  allUsersMoneyIfAccountsAreDeleted,
+  historyFiltration,
+  todayDate,
+  toInputFormat
+} from "../../utils";
 import { useProviderContext } from "../context";
 import ChangeExpenseModal from "../expenses/changeExpenseModal";
 import IncomeModal from "../income/incomeModal";
@@ -55,11 +61,17 @@ const HistoryPage = () => {
 
   const [accounts] = useState([
     noFilter,
-    ...userMoney.map((account) => ({ name: account.name, id: account.id }))
+    ...allUsersMoneyIfAccountsAreDeleted(
+      allUsersHistory[signedUser.id],
+      userMoney
+    )
   ]);
   const [items] = useState([
     noFilter,
-    ...userExpenses.map((expense) => ({ name: expense.name, id: expense.id }))
+    ...allUsersExpensesIfExpensesAreDeleted(
+      allUsersHistory[signedUser.id],
+      userExpenses
+    )
   ]);
   const [historyFilterData, setHistoryFilterData] = useState();
 
@@ -226,7 +238,7 @@ const HistoryPage = () => {
                   disabled={paginatedSortedHistory.length < pageSize}
                   className={
                     "hover:text-stone-400" +
-                    (sortedHistory.length < pageSize ? " text-stone-400" : "")
+                    (sortedHistory.length <= pageSize ? " text-stone-400" : "")
                   }
                   onClick={handleIncreasePageSize}
                 >

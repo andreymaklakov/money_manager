@@ -9,7 +9,7 @@ const Loader = ({ size }) => {
           " border-gray-300 border-t-blue-400 rounded-full animate-spin" +
           (size
             ? " border-[5px] w-[30px] h-[30px] ml-[60px]"
-            : " border-[16px] w-[120px] h-[120px]")
+            : " border-[16px] w-[120px] h-[120px] mt-[200px]")
         }
       ></div>
       {size ? "" : <p className="text-4xl">Loading</p>}

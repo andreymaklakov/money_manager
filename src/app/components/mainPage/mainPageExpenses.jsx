@@ -28,7 +28,7 @@ const MainPageExpenses = ({ userExpenses, icons, defExpenses }) => {
               <tr>
                 <td className="text-lg font-medium">Total Spent</td>
                 <td className="text-lg font-medium">
-                  {userExpenses
+                  {userExpenses.length
                     ? totalCalc(userExpenses).map((arr) => arr.join("") + " ")
                     : 0 + `$`}
                 </td>
@@ -51,7 +51,7 @@ const MainPageExpenses = ({ userExpenses, icons, defExpenses }) => {
                   alt="icon"
                 />
                 <p>
-                  {expense.amount}
+                  {expense.amount.toFixed(2)}
                   {expense.currency}
                 </p>
               </div>

@@ -29,7 +29,7 @@ const MainPageIncomeAccountIcon = ({ name, isSigned, data }) => {
               <tr key={i}>
                 <td>{account.name}</td>
                 <td>
-                  {account.amount}
+                  {account.amount.toFixed(2)}
                   {account.currency}
                 </td>
               </tr>

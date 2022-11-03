@@ -169,7 +169,7 @@ const ExpensesPage = () => {
                       alt="icon"
                     />
                     <p>
-                      {expense.amount}
+                      {expense.amount.toFixed(2)}
                       {expense.currency}
                     </p>
                   </button>

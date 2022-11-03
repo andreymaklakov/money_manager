@@ -38,6 +38,8 @@ const TextField = ({
         onChange={onChange}
         placeholder={placeholder}
         min={type === "number" ? 0 : ""}
+        step={type === "number" ? ".01" : null}
+        pattern={type === "number" ? "^d*(.d{0,2})?$" : null}
       />
 
       {type === "password" && (

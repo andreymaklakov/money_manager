@@ -27,7 +27,7 @@ const UserMoneyTable = ({
             <tr key={i}>
               <td>{account.name}</td>
               <td className="mr-6">
-                {account.amount}
+                {Number(account.amount).toFixed(2)}
                 {account.currency}
               </td>
               <td>

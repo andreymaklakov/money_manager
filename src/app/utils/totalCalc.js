@@ -12,7 +12,8 @@ export function totalCalc(data) {
       result.push([
         data
           .filter((acc) => acc.currency === cur)
-          .reduce((accum, currentValue) => accum + currentValue.amount, 0),
+          .reduce((accum, currentValue) => accum + currentValue.amount, 0)
+          ?.toFixed(2),
         cur
       ]);
     }

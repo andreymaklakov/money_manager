@@ -177,7 +177,7 @@ const ExpenseModal = ({
                 <tr>
                   <td className="text-lg">Spent</td>
                   <td className="text-lg">
-                    {userExpense[0]?.amount}
+                    {userExpense[0]?.amount.toFixed(2)}
                     {data.currency}
                   </td>
                   <td>

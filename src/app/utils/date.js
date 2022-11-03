@@ -35,3 +35,11 @@ export function getStartOfMonth() {
 
   return difference;
 }
+
+export function toUsersReadableDateFormat(date) {
+  date = date.split("-");
+  date = [date[2], date[1], date[0]];
+  date = date.join(".");
+
+  return date;
+}
